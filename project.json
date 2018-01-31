@@ -31,6 +31,36 @@
 				"min" : 1,
 				"max" : 100
 			},
+			"colorChange" : {
+				"order" : 4,
+				"text" : "Change the amount that the color changes",
+				"type" : "slider",
+				"value" : 20,
+				"min" : 0.001,
+				"max" : 50
+			},
+			"rule" : 
+			{
+				"options" : 
+				[
+					{
+						"label" : "random",
+						"value" : 0
+					},
+					{
+						"label" : "first",
+						"value" : 1
+					},
+					{
+						"label" : "last",
+						"value" : 2
+					}
+				],
+				"order" : 5,
+				"text" : "Which Execution rule should be used",
+				"type" : "combo",
+				"value" : 0
+			},
 			"schemecolor" : 
 			{
 				"order" : 10000,

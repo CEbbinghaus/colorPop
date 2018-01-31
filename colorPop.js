@@ -1,12 +1,12 @@
 // Mr. JPrograms is the creator of this idea. See: https://www.khanacademy.org/computer-programming/color-pop/6416482056208384
 
 //const st = 1; // node width and height
-const clrOff = 20; // 0 to 255, how much the color can change between nodes
+let clrOff = 20; // 0 to 255, how much the color can change between nodes
 
-const dirs = [[-1, 0], [0, -1], [1, 0], [0, 1]];
+let dirs = [[-1, 0], [0, -1], [1, 0], [0, 1]];
 
-const initBool = (b) => {return {value : b || true, set : function(v){this.value = v}}}
-const initNum = (n) => {return {value : n || 0, set : function(v){this.value = v}}}
+const initBool = (b, x) => {let r = {value : b || true, set : function(v){this.value = v}}; for(let k in x){r[k] = x[k]};return r;}
+const initNum = (n, x) => {let r = {value : n || 0, set : function(v){this.value = v}}; for(let k in x){r[k] = x[k]};return r;}
 
 const bytesToHex = (r, g, b) => {
     return "#" + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1);
@@ -14,28 +14,39 @@ const bytesToHex = (r, g, b) => {
 const randInt = (min, max) => Math.floor(Math.random() * (max + 1 - min) + min);
 const constrain = (v, min, max) => (v < min ? min : (v > max ? max : v));
 const randomID = () => {let id = '';for(let i = 0; i < 8; i++){id += Math.random() * 10 | 0}return id}
-const setNode = (a, b) => {
+const setNode = (a, id) => {
+    if(!id)return;
+    if(!list.has(id)){
+        list.set(id, [])
+    }
     a.r = constrain(a.r + randInt(-clrOff, clrOff), 0, 255);
     a.g = constrain(a.g + randInt(-clrOff, clrOff), 0, 255);
     a.b = constrain(a.b + randInt(-clrOff, clrOff), 0, 255);
 
     ctx.fillStyle = bytesToHex(a.r, a.g, a.b);
     ctx.fillRect(a.x * settings.get("pixelSize").value, a.y * settings.get("pixelSize").value, settings.get("pixelSize").value, settings.get("pixelSize").value);
-
-    for (const [x, y] of dirs) {
+    for (let [x, y] of dirs) {
         const px = a.x + x;
         const py = a.y + y;
         if (px >= 0 && px < cols && py >= 0 && py < rows) {
             const nb = nodes[px][py];
-            if (!nb.set == b) {
-                nb.set = "";
+            if (nb.set.indexOf(id) == -1) {
+                nb.set.push(id);
                 nb.r = a.r;
                 nb.g = a.g;
                 nb.b = a.b;
-                list.push(nb);
+                list.get(id).push(nb);
             }
         }
     }
+    let t = [];
+    for(i = 0; i < 4; i++)
+    {
+        let n = Math.random() * dirs.length | 0;
+        t.push(dirs[n]);
+        dirs.splice(n, 1)
+    }
+    dirs = t;
 };
 const initNodes = () => {
     nodes = new Array(cols);
@@ -43,7 +54,8 @@ const initNodes = () => {
         let col = nodes[x] = new Array(rows);
         for (let y = 0; y < rows; y++) {
             col[y] = {
-                set: false,
+                isActive: false,
+                set: [],
                 x: x,
                 y: y,
                 r: 0,
@@ -53,27 +65,45 @@ const initNodes = () => {
         }
     }
 };
-
+const update = () => {
+    cols = innerWidth / settings.get("pixelSize").value | 0;
+    rows = innerHeight / settings.get("pixelSize").value | 0;
+    initNodes();
+}
 const loop = () => {
-    nodeProg += list.length / 5;
-    while (nodeProg > 1 && list.length) {
-        nodeProg--;
-        setNode(list.splice(Math.random() * list.length | 0, 1)[0]);
-    }
+    list.forEach((v, k) => {
+        nodeProg += v.length / 5;
+        while (nodeProg > 1 && v.length) {
+            nodeProg--;
+            switch(settings.get('rule').value){
+                case 0:
+                    setNode(v.splice(Math.random() * v.length | 0, 1)[0], k);
+                break
+                case 1:
+                    setNode(v.splice(0, 1)[0], k);
+                break
+                case 2:
+                    setNode(v.splice(v.length > 1 ? v.length - 1:v.length - 2, 1)[0], k);
+                break
+            }
+        }
+        if(v.length <= 0)list.delete(k);
+    })
     requestAnimationFrame(loop);
 };
 let init = () => {
     canvas = document.getElementById("canvas");
-    cols = (canvas.width = innerWidth) / settings.get("pixelSize").value | 0;
-    rows = (canvas.height = innerHeight) / settings.get("pixelSize").value | 0;
+    cols = Math.ceil((canvas.width = innerWidth) / settings.get("pixelSize").value);
+    rows = Math.ceil((canvas.height = innerHeight) / settings.get("pixelSize").value);
     ctx = canvas.getContext("2d");
     initNodes();
     if(settings.get("onStartup").value){
+        let id = randomID();
         let first = nodes[Math.random() * cols | 0][Math.random() * rows | 0];
         first.r = randInt(0, 255);
         first.g = randInt(0, 255);
         first.b = randInt(0, 255);
-        setNode(first);
+        setNode(first, id);
     }
     loop();
     init = null;
@@ -84,12 +114,14 @@ let cols;
 let rows;
 let ctx;
 let nodes;
-let list = [];
+let list = new Map();
 let nodeProg = 0;
 let settings = new Map();
 settings.set("onStartup", initBool(true))
 settings.set("enableMouse", initBool(true))
-settings.set("pixelSize", initNum(1))
+settings.set("pixelSize", initNum(1, {set: function(v){this.value = v; update()}}))
+settings.set("rule", initNum(0))
+settings.set("colorChange", initNum(20, {set: function(v){clrOff = v}}))
 
 window.wallpaperPropertyListener = {
     applyUserProperties: function(properties) {
@@ -101,17 +133,38 @@ window.wallpaperPropertyListener = {
         })
         if(init){
             init()
+            test()
         }
     }
 }
 
 document.addEventListener("mousedown", (evt) => {
-    if(settings.get("enableMouse").value){
-        let id = randomID();
-        let mouse = nodes[Math.floor(evt.clientX / settings.get("pixelSize").value)][Math.floor(evt.clientY / settings.get("pixelSize").value)];
-        mouse.r = randInt(0, 255);
-        mouse.g = randInt(0, 255);
-        mouse.b = randInt(0, 255);
-        setNode(mouse, id);
-    }
+    let id = randomID();
+    let mouse = nodes[Math.floor(evt.clientX / settings.get("pixelSize").value)][Math.floor(evt.clientY / settings.get("pixelSize").value)];
+    mouse.r = randInt(0, 255);
+    mouse.g = randInt(0, 255);
+    mouse.b = randInt(0, 255);
+    setNode(mouse, id);
 })
+
+function test () {
+    let id = randomID();
+    let n = nodes[r(cols)][r(rows)]
+    n.r = randInt(0, 255);
+    n.g = randInt(0, 255);
+    n.b = randInt(0, 255);
+    setNode(n, id);
+    id = randomID();
+    b = nodes[r(cols)][r(rows)]
+    b.r = n.r > 50 ? randInt(0, 255) : Math.random() * 50 | 0;
+    b.g = 255 - n.g;
+    b.b = 255 - n.b;
+    setNode(b, id);
+    setTimeout(() => {
+        test();
+    },1000 +  5000 /* (100 - settings.get("pixelSize").value) / 2*/ | 0)
+}
+
+const r = (n) => {
+    return Math.floor(Math.random() * n)
+}
