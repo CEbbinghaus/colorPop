@@ -10,6 +10,13 @@ const bytesToHex = (r, g, b) => {
 };
 const randInt = (min, max) => Math.floor(Math.random() * (max + 1 - min) + min);
 const constrain = (v, min, max) => (v < min ? min : (v > max ? max : v));
+const clearNodes = () => {
+    nodes.forEach((x, xi) => 
+        x.forEach((y, yi) => {
+            nodes[xi][yi].set = false;
+        })
+    );
+}
 const setNode = a => {
     a.r = constrain(a.r + randInt(-clrOff, clrOff), 0, 255);
     a.g = constrain(a.g + randInt(-clrOff, clrOff), 0, 255);
@@ -63,7 +70,7 @@ const init = () => {
     rows = (canvas.height = innerHeight) / s | 0;
     ctx = canvas.getContext("2d");
     initNodes();
-    const first = nodes[Math.random() * cols | 0][Math.random() * rows | 0];
+    let first = nodes[Math.random() * cols | 0][Math.random() * rows | 0];
     first.r = randInt(0, 255);
     first.g = randInt(0, 255);
     first.b = randInt(0, 255);
@@ -80,3 +87,14 @@ let list = [];
 let nodeProg = 0;
 
 document.addEventListener("DOMContentLoaded", init);
+document.addEventListener("mousedown", (evt) => {
+    console.log(evt.clientX, evt.clientY);
+    if(nodes[evt.clientX][evt.clientY].set){
+        clearNodes()
+    }
+    let mouse = nodes[evt.clientX][evt.clientY];
+    mouse.r = randInt(0, 255);
+    mouse.g = randInt(0, 255);
+    mouse.b = randInt(0, 255);
+    setNode(mouse);
+})
