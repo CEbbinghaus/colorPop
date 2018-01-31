@@ -13,14 +13,8 @@ const bytesToHex = (r, g, b) => {
 };
 const randInt = (min, max) => Math.floor(Math.random() * (max + 1 - min) + min);
 const constrain = (v, min, max) => (v < min ? min : (v > max ? max : v));
-const clearNodes = () => {
-    nodes.forEach((x, xi) => 
-        x.forEach((y, yi) => {
-            nodes[xi][yi].set = false;
-        })
-    );
-}
-const setNode = a => {
+const randomID = () => {let id = '';for(let i = 0; i < 8; i++){id += Math.random() * 10 | 0}return id}
+const setNode = (a, b) => {
     a.r = constrain(a.r + randInt(-clrOff, clrOff), 0, 255);
     a.g = constrain(a.g + randInt(-clrOff, clrOff), 0, 255);
     a.b = constrain(a.b + randInt(-clrOff, clrOff), 0, 255);
@@ -33,8 +27,8 @@ const setNode = a => {
         const py = a.y + y;
         if (px >= 0 && px < cols && py >= 0 && py < rows) {
             const nb = nodes[px][py];
-            if (!nb.set) {
-                nb.set = true;
+            if (!nb.set == b) {
+                nb.set = "";
                 nb.r = a.r;
                 nb.g = a.g;
                 nb.b = a.b;
@@ -59,6 +53,7 @@ const initNodes = () => {
         }
     }
 };
+
 const loop = () => {
     nodeProg += list.length / 5;
     while (nodeProg > 1 && list.length) {
@@ -112,13 +107,11 @@ window.wallpaperPropertyListener = {
 
 document.addEventListener("mousedown", (evt) => {
     if(settings.get("enableMouse").value){
-        if(nodes[Math.floor(evt.clientX / settings.get("pixelSize").value)][Math.floor(evt.clientY / settings.get("pixelSize").value)].set){
-            clearNodes()
-        }
+        let id = randomID();
         let mouse = nodes[Math.floor(evt.clientX / settings.get("pixelSize").value)][Math.floor(evt.clientY / settings.get("pixelSize").value)];
         mouse.r = randInt(0, 255);
         mouse.g = randInt(0, 255);
         mouse.b = randInt(0, 255);
-        setNode(mouse);
+        setNode(mouse, id);
     }
 })
