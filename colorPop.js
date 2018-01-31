@@ -1,9 +1,12 @@
 // Mr. JPrograms is the creator of this idea. See: https://www.khanacademy.org/computer-programming/color-pop/6416482056208384
 
-const s = 1; // node width and height
+//const st = 1; // node width and height
 const clrOff = 20; // 0 to 255, how much the color can change between nodes
 
 const dirs = [[-1, 0], [0, -1], [1, 0], [0, 1]];
+
+const initBool = (b) => {return {value : b || true, set : function(v){this.value = v}}}
+const initNum = (n) => {return {value : n || 0, set : function(v){this.value = v}}}
 
 const bytesToHex = (r, g, b) => {
     return "#" + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1);
@@ -23,7 +26,7 @@ const setNode = a => {
     a.b = constrain(a.b + randInt(-clrOff, clrOff), 0, 255);
 
     ctx.fillStyle = bytesToHex(a.r, a.g, a.b);
-    ctx.fillRect(a.x * s, a.y * s, s, s);
+    ctx.fillRect(a.x * settings.get("pixelSize").value, a.y * settings.get("pixelSize").value, settings.get("pixelSize").value, settings.get("pixelSize").value);
 
     for (const [x, y] of dirs) {
         const px = a.x + x;
@@ -64,18 +67,21 @@ const loop = () => {
     }
     requestAnimationFrame(loop);
 };
-const init = () => {
+let init = () => {
     canvas = document.getElementById("canvas");
-    cols = (canvas.width = innerWidth) / s | 0;
-    rows = (canvas.height = innerHeight) / s | 0;
+    cols = (canvas.width = innerWidth) / settings.get("pixelSize").value | 0;
+    rows = (canvas.height = innerHeight) / settings.get("pixelSize").value | 0;
     ctx = canvas.getContext("2d");
     initNodes();
-    let first = nodes[Math.random() * cols | 0][Math.random() * rows | 0];
-    first.r = randInt(0, 255);
-    first.g = randInt(0, 255);
-    first.b = randInt(0, 255);
-    setNode(first);
+    if(settings.get("onStartup").value){
+        let first = nodes[Math.random() * cols | 0][Math.random() * rows | 0];
+        first.r = randInt(0, 255);
+        first.g = randInt(0, 255);
+        first.b = randInt(0, 255);
+        setNode(first);
+    }
     loop();
+    init = null;
 };
 
 let canvas;
@@ -85,16 +91,34 @@ let ctx;
 let nodes;
 let list = [];
 let nodeProg = 0;
+let settings = new Map();
+settings.set("onStartup", initBool(true))
+settings.set("enableMouse", initBool(true))
+settings.set("pixelSize", initNum(1))
 
-document.addEventListener("DOMContentLoaded", init);
-document.addEventListener("mousedown", (evt) => {
-    console.log(evt.clientX, evt.clientY);
-    if(nodes[evt.clientX][evt.clientY].set){
-        clearNodes()
+window.wallpaperPropertyListener = {
+    applyUserProperties: function(properties) {
+        settings.forEach((v, k) => {
+            if(properties[k]){
+                settings.get(k).set(properties[k].value);
+                console.log(k, properties[k].value)
+            }
+        })
+        if(init){
+            init()
+        }
     }
-    let mouse = nodes[evt.clientX][evt.clientY];
-    mouse.r = randInt(0, 255);
-    mouse.g = randInt(0, 255);
-    mouse.b = randInt(0, 255);
-    setNode(mouse);
+}
+
+document.addEventListener("mousedown", (evt) => {
+    if(settings.get("enableMouse").value){
+        if(nodes[Math.floor(evt.clientX / settings.get("pixelSize").value)][Math.floor(evt.clientY / settings.get("pixelSize").value)].set){
+            clearNodes()
+        }
+        let mouse = nodes[Math.floor(evt.clientX / settings.get("pixelSize").value)][Math.floor(evt.clientY / settings.get("pixelSize").value)];
+        mouse.r = randInt(0, 255);
+        mouse.g = randInt(0, 255);
+        mouse.b = randInt(0, 255);
+        setNode(mouse);
+    }
 })
