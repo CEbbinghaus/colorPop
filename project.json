@@ -11,62 +11,59 @@
 				"text" : "<h4>Color Pop<br><small>This wallpaper was first made by <a href=\"https://www.github.com/Tombez/\">Tombez</a> all credit goes to him. you can find the source code <a href=\"https://www.github.com/CEbbinghaus\">here</a></small></h4>",
 				"type" : "text"
 			},
-			"onStartup":{
-				"order" : 1,
-				"text" : "Create a Color on Startup?",
-				"type" : "bool",
-				"value" : true
-			},
-			"enableMouse":{
-				"order" : 2,
-				"text" : "Allows you to create a circle by clicking on the backround",
-				"type" : "bool",
-				"value" : true
-			},
 			"pixelSize" : {
-				"order" : 3,
+				"order" : 1,
 				"text" : "size of a single pixel",
 				"type" : "slider",
+				"editable" : true,
 				"value" : 1,
 				"min" : 1,
 				"max" : 100
 			},
-			"colorChange" : {
-				"order" : 4,
-				"text" : "Change the amount that the color changes",
+			"updateSpeed" : {
+				"order" : 1.1,
+				"text" : "Update Speed",
 				"type" : "slider",
-				"value" : 20,
-				"min" : 0.001,
-				"max" : 50
+				"editable" : true,
+				"value" : 5000,
+				"min" : 1000,
+				"max" : 100000
 			},
-			"rule" : 
+			"cal" : 
 			{
 				"options" : 
 				[
 					{
-						"label" : "random",
+						"label" : "Random",
 						"value" : 0
 					},
 					{
-						"label" : "first",
+						"label" : "Lines",
 						"value" : 1
-					},
-					{
-						"label" : "last",
-						"value" : 2
 					}
 				],
-				"order" : 5,
-				"text" : "Which Execution rule should be used",
+				"order" : 1.2,
+				"text" : "This will change the way that the map gets genrated. random is better for larger pixel sizes and will create nicer looking maps. lines is a lot more efficient and the only realistic way to draw 1px maps",
 				"type" : "combo",
 				"value" : 0
 			},
-			"schemecolor" : 
-			{
-				"order" : 10000,
-				"text" : "ui_browse_properties_scheme_color",
-				"type" : "color",
-				"value" : "0 0 0"
+			"rainbow" : {
+				"order" : 2,
+				"text" : "Randomize the colors",
+				"type" : "bool",
+				"value" : true
+			},
+			"c1" : {
+				"condition" : "!rainbow.value",
+				"order" : 2.1,
+				"text"  : "First Color",
+				"type" : "color"
+			},
+			"c2" : {
+				"condition" : "!rainbow.value",
+				"order" : 2.2,
+				"text"  : "Second Color",
+				"type" : "color"
 			}
 		}
 	},
