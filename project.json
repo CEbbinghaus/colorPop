@@ -43,7 +43,7 @@
 					}
 				],
 				"order" : 1.2,
-				"text" : "This will change the way that the map gets genrated. random is better for larger pixel sizes and will create nicer looking maps. lines is a lot more efficient and the only realistic way to draw 1px maps",
+				"text" : "This will change the way that the map gets genrated",
 				"type" : "combo",
 				"value" : 0
 			},
